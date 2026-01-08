@@ -71,6 +71,8 @@ L'inconvénient, outre que cela est moins réaliste, est que les données rajout
 disparaissent à chaque démarrage, à part quelques données de test rajoutées
 à l'initialisation.
 
+Une console web d'administration de H2 est accessible à http://localhost:8080/h2-console
+
 ### PostgreSQL par image Docker
 
 Pour lancer PostgreSQL dans une image Docker à l'aider du docker-compose.yml fourni :
