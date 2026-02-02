@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body></body>
+
+<!-- =========================
+     ✅ LAYOUT GLOBAL
+========================= -->
+<th:block th:fragment="layout(title, nbSalaries, active, content)">
+  <!DOCTYPE html>
+  <html lang="fr">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${title}">Gestion des salariés</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+      body { background: #f6f7fb; }
+      .admin-card {
+        background: #fff;
+        border: 1px solid rgba(0,0,0,.08);
+        border-radius: .5rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,.04);
+        padding: 1.5rem;
+      }
+      .col-actions {
+        width: 1%;
+        white-space: nowrap;
+        text-align: right;
+      }
+      .table thead th {
+        border-top: 0;
+        border-bottom: 1px solid rgba(0,0,0,.08);
+      }
+    </style>
+  </head>
+
+  <body>
+
+  <!-- ✅ Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" th:href="@{/salaries}">Gestion salariés</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item" th:classappend="${active == 'LIST'} ? 'active'">
+          <a class="nav-link" th:href="@{/salaries}">
+            Liste <span class="sr-only" th:if="${active == 'LIST'}">(current)</span>
+          </a>
+        </li>
+        <li class="nav-item" th:classappend="${active == 'NEW'} ? 'active'">
+          <a class="nav-link" th:href="@{/salaries/aide/new}">
+            Nouveau salarié <span class="sr-only" th:if="${active == 'NEW'}">(current)</span>
+          </a>
+        </li>
+      </ul>
+
+      <span class="navbar-text text-light">
+        Total : <strong th:text="${nbSalaries}">0</strong>
+      </span>
+    </div>
+  </nav>
+
+  <!-- ✅ Contenu -->
+  <main class="container mt-3">
+    <div class="admin-card" th:insert="${content}">
+      <!-- contenu -->
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+  </html>
+</th:block>
+
+<!-- =========================
+     ✅ HEADER ADMIN
+========================= -->
+<th:block th:fragment="pageHeader(title, rightActions, bottomContent)">
+  <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3">
+    <div class="mb-2 mb-md-0">
+      <h1 class="h3 mb-0" th:text="${title}">Titre</h1>
+    </div>
+    <div class="d-flex flex-wrap justify-content-md-end" th:insert="${rightActions}">
+      <!-- actions -->
+    </div>
+  </div>
+  <div class="mb-3" th:insert="${bottomContent}">
+    <!-- contenu -->
+  </div>
+</th:block>
+
+</html>

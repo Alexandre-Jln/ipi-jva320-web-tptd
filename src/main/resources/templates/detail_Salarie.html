@@ -1,141 +1,267 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
-    <title>Gestion des salariés</title>
-    <link rel="stylesheet" href="/static/bootstrap.min.css">
-    <link rel="stylesheet" href="./static/font-awesome.css">
-</head>
-<body>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{common :: layout('Gestion des salariés - Détail', ${nbSalaries}, 'DETAIL', ~{::content})}">
 
-<div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="http://localhost:8080/">Gestion des salariés</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<th:block th:fragment="content">
+
+    <!-- Header avec boutons -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h3 mb-0">Détail du salarié</h2>
+        <div>
+            <a th:href="@{/salaries}" class="btn btn-secondary mr-2">Retour</a>
+            <a th:if="${salarie != null && salarie.id != null}"
+               th:href="@{/salaries/{id}/delete(id=${salarie.id})}"
+               class="btn btn-danger"
+               onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce salarié ?');">
+                Supprimer
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa fa-check-circle"></i> <span th:text="${successMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
         </button>
+    </div>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li><a href="http://localhost:8080/salaries?page=0&amp;size=10&amp;sortProperty=nom&amp;sortDirection=ASC" class="nav-link">Liste des salariés <span class="badge badge-primary">26</span></a></li>
-            </ul>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
 
-            <form class="form-inline my-2 my-lg-0" role="search" action="http://localhost:8080/salaries" method="GET">
-                <div class="form-group form-inline">
-                    <input name="nom" class="form-control" placeholder="Rechercher un nom" type="text">
-                </div>
-                <button type="submit" class="btn btn-outline-success ml-2 my-2 my-sm-0">Rechercher</button>
-            </form>
+    <!-- ========================================
+         FORMULAIRE DE CRÉATION
+         ======================================== -->
+    <form id="createForm"
+          th:if="${salarie != null && salarie.id == null}"
+          th:action="@{/salaries/save}"
+          th:object="${salarie}"
+          method="post"
+          class="row">
+
+        <!-- Erreurs globales - DANS le form -->
+        <div class="col-12 mb-3" th:if="${#fields.hasGlobalErrors()}">
+            <div class="alert alert-danger">
+                <h5><i class="fa fa-exclamation-circle"></i> Erreurs détectées :</h5>
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+                </ul>
+            </div>
         </div>
-    </nav>
-</div>
 
-<div class="container">
-    <div th:text="#{msg.salarie}"></div><!-- TODO better messages example -->
-
-    <h2>Détail du salarié</h2>
-    
-    <form id="saveForm" action="http://localhost:8080/salaries/aide/10" method="post" class="row">
-
-        <div class="col-lg-6">
+        <div class="col-md-6">
             <div class="form-group">
-                <label class="form-control-label" for="id">ID</label>
-                <input type="text" value="10" class="form-control" name="id" id="id" disabled="true">
-
-                <label class="form-control-label" for="nom">Nom</label>
-                <input type="text" value="Jean Dupont" class="form-control" name="nom" id="nom">
-
-                <label class="form-control-label" for="moisEnCours">moisEnCours</label>
-                <input type="date" value="03/2023" class="form-control" name="moisEnCours"
-                       id="moisEnCours">
-
-                <label class="form-control-label" for="moisDebutContrat">moisDebutContrat</label>
-                <input type="date" value="08/2022" class="form-control" name="moisDebutContrat" id="moisDebutContrat">
+                <label>ID</label>
+                <input type="text" class="form-control" disabled value="(généré automatiquement)">
             </div>
-        </div>
 
-        <div class="col-lg-6">
             <div class="form-group">
-
-                <div>
-                    <label class="form-control-label" for="joursTravaillesAnneeN">joursTravaillesAnneeN</label>
-                    <div class="input-group">
-                        <input type="number" step="0.5" value="20" class="form-control" name="joursTravaillesAnneeN" id="joursTravaillesAnneeN">
-                        <div class="input-group-append">
-                            <span class="input-group-text">j</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="form-control-label" for="congesPayesAcquisAnneeN">congesPayesAcquisAnneeN</label>
-                    <div class="input-group">
-                        <input type="number" step="0.5" value="2.5" class="form-control" name="congesPayesAcquisAnneeN" id="congesPayesAcquisAnneeN">
-                    <div class="input-group-append">
-                        <span class="input-group-text">j</span>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </div>
-        
-
-        <div class="col-lg-6">
-            <div>
-                <label class="form-control-label" for="joursTravaillesAnneeNMoins1">joursTravaillesAnneeNMoins1</label>
-                <div class="input-group">
-                    <input type="number" step="0.5" value="80" class="form-control" name="joursTravaillesAnneeNMoins1" id="joursTravaillesAnneeNMoins1">
-                    <div class="input-group-append">
-                        <span class="input-group-text">j</span>
-                    </div>
+                <label for="nom-create">Nom *</label>
+                <input type="text" id="nom-create" th:field="*{nom}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('nom')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('nom')}">
+                    <span th:errors="*{nom}"></span>
                 </div>
             </div>
 
-            <div>
-                <label class="form-control-label" for="congesPayesAcquisAnneeNMoins1">congesPayesAcquisAnneeNMoins1</label>
-                <div class="input-group">
-                    <input type="number" step="0.5" value="10" class="form-control" name="congesPayesAcquisAnneeNMoins1" id="congesPayesAcquisAnneeNMoins1">
-                    <div class="input-group-append">
-                        <span class="input-group-text">j</span>
-                    </div>
+            <div class="form-group">
+                <label for="moisDebutContrat-create">Mois début contrat *</label>
+                <input type="date" id="moisDebutContrat-create" th:field="*{moisDebutContrat}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('moisDebutContrat')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('moisDebutContrat')}">
+                    <span th:errors="*{moisDebutContrat}"></span>
                 </div>
             </div>
 
-            <div>
-                <label class="form-control-label" for="congesPayesPrisAnneeNMoins1">congesPayesPrisAnneeNMoins1</label>
-                <div class="input-group">
-                    <input type="number" step="0.5" value="4" class="form-control" name="congesPayesPrisAnneeNMoins1" id="congesPayesPrisAnneeNMoins1">
-                    <div class="input-group-append">
-                        <span class="input-group-text">j</span>
-                    </div>
+            <div class="form-group">
+                <label for="moisEnCours-create">Mois en cours *</label>
+                <input type="date" id="moisEnCours-create" th:field="*{moisEnCours}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('moisEnCours')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('moisEnCours')}">
+                    <span th:errors="*{moisEnCours}"></span>
                 </div>
             </div>
         </div>
 
-        
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="joursTravaillesAnneeN-create">Jours travaillés année N</label>
+                <input type="number" id="joursTravaillesAnneeN-create" step="0.5" th:field="*{joursTravaillesAnneeN}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('joursTravaillesAnneeN')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('joursTravaillesAnneeN')}">
+                    <span th:errors="*{joursTravaillesAnneeN}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="congesPayesAcquisAnneeN-create">Congés acquis année N</label>
+                <input type="number" id="congesPayesAcquisAnneeN-create" step="0.5" th:field="*{congesPayesAcquisAnneeN}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('congesPayesAcquisAnneeN')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('congesPayesAcquisAnneeN')}">
+                    <span th:errors="*{congesPayesAcquisAnneeN}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="joursTravaillesAnneeNMoins1-create">Jours travaillés année N-1</label>
+                <input type="number" id="joursTravaillesAnneeNMoins1-create" step="0.5" th:field="*{joursTravaillesAnneeNMoins1}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('joursTravaillesAnneeNMoins1')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('joursTravaillesAnneeNMoins1')}">
+                    <span th:errors="*{joursTravaillesAnneeNMoins1}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="congesPayesAcquisAnneeNMoins1-create">Congés acquis année N-1</label>
+                <input type="number" id="congesPayesAcquisAnneeNMoins1-create" step="0.5" th:field="*{congesPayesAcquisAnneeNMoins1}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('congesPayesAcquisAnneeNMoins1')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('congesPayesAcquisAnneeNMoins1')}">
+                    <span th:errors="*{congesPayesAcquisAnneeNMoins1}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="congesPayesPrisAnneeNMoins1-create">Congés pris année N-1</label>
+                <input type="number" id="congesPayesPrisAnneeNMoins1-create" step="0.5" th:field="*{congesPayesPrisAnneeNMoins1}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('congesPayesPrisAnneeNMoins1')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('congesPayesPrisAnneeNMoins1')}">
+                    <span th:errors="*{congesPayesPrisAnneeNMoins1}"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
     </form>
-    
-    <div class="row">
-        <div class="col-lg-6">
-            <ul class="list-group list-unstyled">
-                <li class="alert alert-danger" role="alert">Erreur dans un champ !</li>
-            </ul>
+
+    <!-- ========================================
+         FORMULAIRE DE MODIFICATION
+         ======================================== -->
+    <form id="updateForm"
+          th:if="${salarie != null && salarie.id != null}"
+          th:action="@{/salaries/{id}(id=${salarie.id})}"
+          th:object="${salarie}"
+          method="post"
+          class="row">
+
+        <input type="hidden" th:field="*{id}">
+
+        <!-- Erreurs globales - DANS le form -->
+        <div class="col-12 mb-3" th:if="${#fields.hasGlobalErrors()}">
+            <div class="alert alert-danger">
+                <h5><i class="fa fa-exclamation-circle"></i> Erreurs détectées :</h5>
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+                </ul>
+            </div>
         </div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-lg-6">
-            <input form="saveForm" class="btn btn-primary" type="submit" value="Enregistrer">
-            <a href="/salaries/10/delete" class="btn btn-danger">Supprimer</a>
+
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>ID</label>
+                <input type="text" th:value="*{id}" class="form-control" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="nom-update">Nom *</label>
+                <input type="text" id="nom-update" th:field="*{nom}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('nom')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('nom')}">
+                    <span th:errors="*{nom}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="moisDebutContrat-update">Mois début contrat *</label>
+                <input type="date" id="moisDebutContrat-update" th:field="*{moisDebutContrat}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('moisDebutContrat')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('moisDebutContrat')}">
+                    <span th:errors="*{moisDebutContrat}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="moisEnCours-update">Mois en cours *</label>
+                <input type="date" id="moisEnCours-update" th:field="*{moisEnCours}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('moisEnCours')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('moisEnCours')}">
+                    <span th:errors="*{moisEnCours}"></span>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="row">
-    <table>
-        <tr><td class="alert alert-danger" role="alert">Erreur de type de données !</td></tr>
-    </table>
-    <div>Erreur globale spécifique !</div>
-    </div>
-</div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="joursTravaillesAnneeN-update">Jours travaillés année N</label>
+                <input type="number" id="joursTravaillesAnneeN-update" step="0.5" th:field="*{joursTravaillesAnneeN}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('joursTravaillesAnneeN')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('joursTravaillesAnneeN')}">
+                    <span th:errors="*{joursTravaillesAnneeN}"></span>
+                </div>
+            </div>
 
+            <div class="form-group">
+                <label for="congesPayesAcquisAnneeN-update">Congés acquis année N</label>
+                <input type="number" id="congesPayesAcquisAnneeN-update" step="0.5" th:field="*{congesPayesAcquisAnneeN}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('congesPayesAcquisAnneeN')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('congesPayesAcquisAnneeN')}">
+                    <span th:errors="*{congesPayesAcquisAnneeN}"></span>
+                </div>
+            </div>
 
-</body></html>
+            <div class="form-group">
+                <label for="joursTravaillesAnneeNMoins1-update">Jours travaillés année N-1</label>
+                <input type="number" id="joursTravaillesAnneeNMoins1-update" step="0.5" th:field="*{joursTravaillesAnneeNMoins1}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('joursTravaillesAnneeNMoins1')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('joursTravaillesAnneeNMoins1')}">
+                    <span th:errors="*{joursTravaillesAnneeNMoins1}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="congesPayesAcquisAnneeNMoins1-update">Congés acquis année N-1</label>
+                <input type="number" id="congesPayesAcquisAnneeNMoins1-update" step="0.5" th:field="*{congesPayesAcquisAnneeNMoins1}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('congesPayesAcquisAnneeNMoins1')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('congesPayesAcquisAnneeNMoins1')}">
+                    <span th:errors="*{congesPayesAcquisAnneeNMoins1}"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="congesPayesPrisAnneeNMoins1-update">Congés pris année N-1</label>
+                <input type="number" id="congesPayesPrisAnneeNMoins1-update" step="0.5" th:field="*{congesPayesPrisAnneeNMoins1}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('congesPayesPrisAnneeNMoins1')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('congesPayesPrisAnneeNMoins1')}">
+                    <span th:errors="*{congesPayesPrisAnneeNMoins1}"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </form>
+
+</th:block>
+</html>

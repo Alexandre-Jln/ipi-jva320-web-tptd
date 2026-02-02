@@ -1,78 +1,143 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{common :: layout('Gestion des salariés - Liste', ${nbSalaries}, 'LIST', ~{::content})}">
 
-  <title>Gestion des salariés</title>
-  <link rel="stylesheet" href="/static/bootstrap.min.css">
-  <link rel="stylesheet" href="/static/font-awesome.css">
-</head>
-<body>
+<th:block th:fragment="content">
 
-<div>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="http://localhost:8080/">Gestion des salariés</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+  <th:block th:fragment="bottomContent">
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-        <li><a href="http://localhost:8080/salaries?page=0&amp;size=10&amp;sortProperty=nom&amp;sortDirection=ASC" class="nav-link">Liste des salariés <span class="badge badge-primary"></span></a></li>
-      </ul>
-
-      <form class="form-inline my-2 my-lg-0" role="search" action="http://localhost:8080/salaries" method="GET">
-        <div class="form-group">
-          <input name="nom" class="form-control" placeholder="Rechercher un nom" type="text">
-        </div>
-        <button type="submit" class="btn btn-outline-success ml-2 my-2 my-sm-0">Rechercher</button>
-      </form>
+    <!-- Messages flash -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <span th:text="${successMessage}">Succès</span>
+      <button type="button" class="close" data-dismiss="alert">
+        <span>&times;</span>
+      </button>
     </div>
-  </nav>
-</div>
-<div class="container">
-  <div class="row">
-    <div class="col-lg-12">
-      <h1>Liste des salariés</h1>
-      <a href="/salaries/aide/new" class="btn btn-primary">Nouveau salarié</a>
-      <table class="table table-hover table-striped">
-        <thead>
-        <tr>
-          <th scope="col">ID
-            <a href="/salaries?page=0&size=10&sortProperty=id&sortDirection=DESC"><i class="fa fa-chevron-up"></i></a>
-          </th>
-          <th scope="col">Nom
-            <a href="/salaries?page=0&size=10&sortProperty=nom&sortDirection=DESC"><i class="fa fa-chevron-up"></i></a>
-          </th>
-          <th scope="col"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <th scope="row">1</th>
-          <td>Jeanne Dupond</td>
-          <td><a href="/salaries/aide/2" class="btn btn-primary ember-view">Détail</a></td>
-        </tr>
-        <tr>
-          <th scope="row">2</th>
-          <td>Robert Martin</td>
-          <td><a href="/salaries/aide/3" class="btn btn-primary ember-view">Détail</a></td>
-        </tr>
-        </tbody>
-      </table>
-      <div class="row">
-        <div class="col-lg-6"><p>Affichage des salariés 1 à 10 sur un total de <span>11</span></p>
-        </div>
-        <div class="col-lg-6">
-          <ul class="pagination">
-            <li class="page-item disabled">
-              <a class="page-link" href="/salaries?page=-1&amp;size=10&amp;sortProperty=nom&amp;sortDirection=ASC">«</a>
-            </li>
-            <li><a href="#" class="page-link">Page 1</a></li>
-            <li class="page-item ">
-              <a class="page-link" href="/salaries?page=1&amp;size=10&amp;sortProperty=nom&amp;sortDirection=ASC">»</a></li>
-          </ul></div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <span th:text="${errorMessage}">Erreur</span>
+      <button type="button" class="close" data-dismiss="alert">
+        <span>&times;</span>
+      </button>
+    </div>
+
+    <!-- Recherche + Nouveau salarié sur la même ligne -->
+    <form class="form-inline" th:action="@{/salaries}" method="get">
+      <input type="hidden" name="page" value="0"/>
+      <input type="hidden" name="size" th:value="${pageSize}"/>
+      <input type="hidden" name="sortProperty" th:value="${sortProperty}"/>
+      <input type="hidden" name="sortDirection" th:value="${sortDirection}"/>
+
+      <div class="form-group mr-2">
+        <input name="nom" class="form-control" placeholder="Rechercher un nom" type="text"
+               th:value="${nomRecherche}">
       </div>
+
+      <button type="submit" class="btn btn-outline-success mr-2">Rechercher</button>
+
+      <a th:if="${nomRecherche != null && !nomRecherche.isBlank()}"
+         th:href="@{/salaries(page=0,size=${pageSize},sortProperty=${sortProperty},sortDirection=${sortDirection})}"
+         class="btn btn-link mr-2">
+        Réinitialiser
+      </a>
+
+      <!-- Nouveau salarié poussé à droite -->
+      <a th:href="@{/salaries/aide/new}" class="btn btn-primary ml-auto">
+        <i class="fa fa-plus"></i> Nouveau salarié
+      </a>
+    </form>
+
+  </th:block>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-hover table-striped mt-2 mb-0">
+      <thead>
+      <tr>
+        <th scope="col">
+          ID
+          <a th:href="@{/salaries(page=${currentPage}, size=${pageSize}, sortProperty='id',
+                        sortDirection=${(sortProperty == 'id' && sortDirection == 'ASC') ? 'DESC' : 'ASC'},
+                        nom=${nomRecherche})}">
+            <i th:class="${sortProperty == 'id'
+                              ? (sortDirection == 'ASC' ? 'fa fa-chevron-up' : 'fa fa-chevron-down')
+                              : 'fa fa-sort'}"></i>
+          </a>
+        </th>
+
+        <th scope="col">
+          Nom
+          <a th:href="@{/salaries(page=${currentPage}, size=${pageSize}, sortProperty='nom',
+                        sortDirection=${(sortProperty == 'nom' && sortDirection == 'ASC') ? 'DESC' : 'ASC'},
+                        nom=${nomRecherche})}">
+            <i th:class="${sortProperty == 'nom'
+                              ? (sortDirection == 'ASC' ? 'fa fa-chevron-up' : 'fa fa-chevron-down')
+                              : 'fa fa-sort'}"></i>
+          </a>
+        </th>
+
+        <th scope="col" class="col-actions">Actions</th>
+      </tr>
+      </thead>
+
+      <tbody th:if="${not #lists.isEmpty(salaries)}">
+      <tr th:each="s : ${salaries}">
+        <th scope="row" th:text="${s.id}">1</th>
+        <td th:text="${s.nom}">Jean Dupont</td>
+        <td class="col-actions">
+          <a class="btn btn-primary btn-sm"
+             th:href="@{/salaries/{id}(id=${s.id})}">
+            Détail
+          </a>
+        </td>
+      </tr>
+      </tbody>
+
+      <tbody th:if="${#lists.isEmpty(salaries)}">
+      <tr>
+        <td colspan="3" class="text-center">Aucun salarié</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="row mt-3">
+    <div class="col-lg-6">
+      <p class="mb-0">
+        Total salariés : <span th:text="${totalItems}">0</span><br>
+        Page <span th:text="${currentPage + 1}">1</span> sur <span th:text="${totalPages}">1</span>
+      </p>
+    </div>
+
+    <div class="col-lg-6">
+      <ul class="pagination justify-content-end mb-0">
+        <li th:class="${currentPage == 0} ? 'page-item disabled' : 'page-item'">
+          <a class="page-link"
+             th:href="@{/salaries(page=${currentPage - 1}, size=${pageSize},
+                            sortProperty=${sortProperty}, sortDirection=${sortDirection}, nom=${nomRecherche})}">
+            «
+          </a>
+        </li>
+
+        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+            th:class="${i == currentPage} ? 'page-item active' : 'page-item'">
+          <a class="page-link"
+             th:href="@{/salaries(page=${i}, size=${pageSize},
+                            sortProperty=${sortProperty}, sortDirection=${sortDirection}, nom=${nomRecherche})}"
+             th:text="${i + 1}">1</a>
+        </li>
+
+        <li th:class="${currentPage + 1 >= totalPages} ? 'page-item disabled' : 'page-item'">
+          <a class="page-link"
+             th:href="@{/salaries(page=${currentPage + 1}, size=${pageSize},
+                            sortProperty=${sortProperty}, sortDirection=${sortDirection}, nom=${nomRecherche})}">
+            »
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
-</div>
-</div></body></html>
+
+</th:block>
+</html>
